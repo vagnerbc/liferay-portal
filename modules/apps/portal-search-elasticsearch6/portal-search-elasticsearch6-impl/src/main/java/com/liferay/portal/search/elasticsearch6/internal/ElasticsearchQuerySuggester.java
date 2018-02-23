@@ -196,6 +196,7 @@ public class ElasticsearchQuerySuggester implements QuerySuggester {
 			_SPELL_CHECK_REQUEST_NAME, field, searchContext.getKeywords());
 
 		termSuggester.setSize(max);
+		termSuggester.setSuggestMode(Suggester.SuggestMode.ALWAYS);
 
 		return termSuggester;
 	}
