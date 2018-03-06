@@ -109,6 +109,14 @@ public abstract class BaseSpellCheckTestCase extends BaseIndexingTestCase {
 	}
 
 	@Test
+	public void testSpellCheckAlways() throws Exception {
+		indexSpellCheckWord("index");
+		indexSpellCheckWord("indxe");
+
+		assertSpellCheck("indxe", "index");
+	}
+
+	@Test
 	public void testSpellCheckMap() throws Exception {
 		indexSpellCheckWord("liferay");
 
