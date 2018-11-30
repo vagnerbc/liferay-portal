@@ -93,6 +93,8 @@ public class JournalArticleModelSummaryContributor
 				Field.TITLE);
 		}
 
+		String content = StringPool.BLANK;
+
 //		String content = getDDMContentSummary(
 //			document, snippetLocale, portletRequest, portletResponse);
 //
@@ -100,22 +102,6 @@ public class JournalArticleModelSummaryContributor
 //			content = getDDMContentSummary(
 //				document, defaultLocale, portletRequest, portletResponse);
 //		}
-
-//----------------------------------------		test
-		String content = StringPool.BLANK;
-
-		content = document.get(
-			snippetLocale, Field.SNIPPET + StringPool.UNDERLINE + Field.CONTENT,
-			Field.CONTENT);
-
-		if (Validator.isNull(content) && !snippetLocale.equals(defaultLocale)) {
-			content = document.get(
-				defaultLocale,
-				Field.SNIPPET + StringPool.UNDERLINE + Field.CONTENT,
-				Field.CONTENT);
-		}
-
-// ------------------------------------------------------
 
 		Summary summary = new Summary(snippetLocale, title, content);
 

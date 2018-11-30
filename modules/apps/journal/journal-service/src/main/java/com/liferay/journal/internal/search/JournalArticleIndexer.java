@@ -105,9 +105,6 @@ import java.util.Set;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Harry Mark
@@ -115,8 +112,9 @@ import org.osgi.service.component.annotations.Reference;
  * @author Raymond Augé
  * @author Hugo Huijser
  * @author Tibor Lipusz
+ * * @deprecated As of Judson (7.1.x), since 7.1.0
  */
-@Component(immediate = true, service = Indexer.class)
+@Deprecated
 public class JournalArticleIndexer
 	extends BaseIndexer<JournalArticle> implements DDMStructureIndexer {
 
@@ -949,40 +947,34 @@ public class JournalArticleIndexer
 			getArticleVersions(article), isCommitImmediately());
 	}
 
-	@Reference(unbind = "-")
 	protected void setConfigurationProvider(
 		ConfigurationProvider configurationProvider) {
 
 		_configurationProvider = configurationProvider;
 	}
 
-	@Reference(unbind = "-")
 	protected void setDDMIndexer(DDMIndexer ddmIndexer) {
 		_ddmIndexer = ddmIndexer;
 	}
 
-	@Reference(unbind = "-")
 	protected void setDDMStructureLocalService(
 		DDMStructureLocalService ddmStructureLocalService) {
 
 		_ddmStructureLocalService = ddmStructureLocalService;
 	}
 
-	@Reference(unbind = "-")
 	protected void setFieldsToDDMFormValuesConverter(
 		FieldsToDDMFormValuesConverter fieldsToDDMFormValuesConverter) {
 
 		_fieldsToDDMFormValuesConverter = fieldsToDDMFormValuesConverter;
 	}
 
-	@Reference(unbind = "-")
 	protected void setJournalArticleLocalService(
 		JournalArticleLocalService journalArticleLocalService) {
 
 		_journalArticleLocalService = journalArticleLocalService;
 	}
 
-	@Reference(unbind = "-")
 	protected void setJournalArticleResourceLocalService(
 		JournalArticleResourceLocalService journalArticleResourceLocalService) {
 
@@ -990,12 +982,10 @@ public class JournalArticleIndexer
 			journalArticleResourceLocalService;
 	}
 
-	@Reference(unbind = "-")
 	protected void setJournalContent(JournalContent journalContent) {
 		_journalContent = journalContent;
 	}
 
-	@Reference(unbind = "-")
 	protected void setJournalConverter(JournalConverter journalConverter) {
 		_journalConverter = journalConverter;
 	}
@@ -1023,43 +1013,23 @@ public class JournalArticleIndexer
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleIndexer.class);
 
-	@Reference
 	private BatchIndexingHelper _batchIndexingHelper;
-
 	private ConfigurationProvider _configurationProvider;
 	private DDMIndexer _ddmIndexer;
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private FieldsToDDMFormValuesConverter _fieldsToDDMFormValuesConverter;
-
-	@Reference
 	private FilterBuilders _filterBuilders;
-
-	@Reference
 	private IndexerRegistry _indexerRegistry;
-
-	@Reference
 	private IndexStatusManager _indexStatusManager;
-
-	@Reference
 	private IndexWriterHelper _indexWriterHelper;
-
 	private JournalArticleLocalService _journalArticleLocalService;
-
-	@Reference(
-		target = "(model.class.name=com.liferay.journal.model.JournalArticle)"
-	)
 	private ModelResourcePermission<JournalArticle>
 		_journalArticleModelResourcePermission;
-
 	private JournalArticleResourceLocalService
 		_journalArticleResourceLocalService;
 	private JournalContent _journalContent;
 	private JournalConverter _journalConverter;
-
-	@Reference
 	private Portal _portal;
-
-	@Reference
 	private TrashHelper _trashHelper;
 
 }
