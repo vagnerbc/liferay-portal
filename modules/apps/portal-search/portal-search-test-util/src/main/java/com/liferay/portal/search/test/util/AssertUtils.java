@@ -31,6 +31,7 @@ public class AssertUtils {
 
 		Assert.assertEquals(
 			message, _toString(expectedMap), _toString(actualMap));
+
 	}
 
 	private static String _toString(Map<?, ?> map) {
