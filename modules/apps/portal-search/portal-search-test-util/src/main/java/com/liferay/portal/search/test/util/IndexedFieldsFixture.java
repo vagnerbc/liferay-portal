@@ -110,6 +110,12 @@ public class IndexedFieldsFixture {
 		map.put(Field.UID, modelClassName + "_PORTLET_" + id);
 	}
 
+	public void populateUID(
+		String modelClassName, String id, Map<String, String> map) {
+
+		map.put(Field.UID, modelClassName + "_PORTLET_" + id);
+	}
+
 	public void postProcessDocument(Document document) {
 		if (_isSearchEngineSolr()) {
 			document.remove("score");
