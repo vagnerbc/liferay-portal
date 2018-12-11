@@ -158,11 +158,6 @@ public class LocalPluginPackageRepository {
 		throws PortalException {
 
 		_pluginPackages.remove(pluginPackage.getContext());
-
-		Indexer<PluginPackage> indexer = IndexerRegistryUtil.getIndexer(
-			PluginPackage.class);
-
-		indexer.delete(pluginPackage);
 	}
 
 	public void removePluginPackage(String context) {

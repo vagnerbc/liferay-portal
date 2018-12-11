@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.plugin.RemotePluginPackageRepository;
 import com.liferay.portal.kernel.plugin.Screenshot;
 import com.liferay.portal.kernel.plugin.Version;
 import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.search.HitsImpl;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.QueryConfig;
@@ -474,15 +475,6 @@ public class PluginPackageUtil {
 		return PropsValues.PLUGIN_TYPES;
 	}
 
-	private void _indexPluginPackage(PluginPackage pluginPackage)
-		throws PortalException {
-
-		Indexer<PluginPackage> indexer = IndexerRegistryUtil.getIndexer(
-			PluginPackage.class);
-
-		indexer.reindex(pluginPackage);
-	}
-
 	private boolean _isCurrentVersionSupported(List<String> versions) {
 		Version currentVersion = Version.getInstance(ReleaseInfo.getVersion());
 
@@ -750,7 +742,6 @@ public class PluginPackageUtil {
 
 			pluginPackageRepository.addPluginPackage(pluginPackage);
 
-			_indexPluginPackage(pluginPackage);
 		}
 
 		return pluginPackageRepository;
@@ -1248,7 +1239,6 @@ public class PluginPackageUtil {
 
 		_updateAvailable = null;
 
-		_indexPluginPackage(pluginPackage);
 	}
 
 	private void _registerPluginPackageInstallation(String preliminaryContext) {
@@ -1280,11 +1270,6 @@ public class PluginPackageUtil {
 						ppe.toString()));
 			}
 		}
-
-		Indexer<PluginPackage> indexer = IndexerRegistryUtil.getIndexer(
-			PluginPackage.class);
-
-		indexer.reindex(new String[0]);
 
 		return repositoryReport;
 	}
@@ -1319,10 +1304,7 @@ public class PluginPackageUtil {
 
 		searchContext.setStart(start);
 
-		Indexer<PluginPackage> indexer = IndexerRegistryUtil.getIndexer(
-			PluginPackage.class);
-
-		return indexer.search(searchContext);
+		return new HitsImpl();
 	}
 
 	private void _unregisterInstalledPluginPackage(PluginPackage pluginPackage)
@@ -1333,10 +1315,6 @@ public class PluginPackageUtil {
 		try {
 			List<PluginPackage> pluginPackages = _getAvailablePluginPackages(
 				pluginPackage.getGroupId(), pluginPackage.getArtifactId());
-
-			for (PluginPackage availablePackage : pluginPackages) {
-				_indexPluginPackage(availablePackage);
-			}
 		}
 		catch (PluginPackageException ppe) {
 			if (_log.isWarnEnabled()) {
