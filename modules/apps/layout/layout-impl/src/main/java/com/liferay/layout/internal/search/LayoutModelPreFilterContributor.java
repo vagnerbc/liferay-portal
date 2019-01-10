@@ -28,7 +28,6 @@ import com.liferay.portal.search.spi.model.registrar.ModelSearchSettings;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * @author Pavel Savinov
  * @author Vagner B.C
  */
 @Component(

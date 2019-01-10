@@ -25,7 +25,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Pavel Savinov
  * @author Vagner B.C
  */
 @Component(
@@ -45,7 +44,6 @@ public class LayoutKeywordQueryContributor implements KeywordQueryContributor {
 
 		queryHelper.addSearchLocalizedTerm(
 			booleanQuery, searchContext, Field.CONTENT, false);
-
 		queryHelper.addSearchLocalizedTerm(
 			booleanQuery, searchContext, Field.TITLE, false);
 	}

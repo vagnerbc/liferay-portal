@@ -33,7 +33,6 @@ import java.util.Set;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * @author Pavel Savinov
  * @author Vagner B.C
  */
 @Component(
