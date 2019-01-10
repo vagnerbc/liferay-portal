@@ -28,7 +28,6 @@ import com.liferay.portal.test.rule.PermissionCheckerTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -58,10 +57,10 @@ public class LayoutIndexerReindexTest {
 	}
 
 	@Test
-	public void testReindexing() throws Exception {
+	public void testReindex() throws Exception {
 		Layout layout = layoutFixture.createLayout();
 
-		String searchTerm = layout.getName(Locale.US);
+		String searchTerm = layout.getName();
 
 		layoutIndexerFixture.searchOnlyOne(searchTerm);
 
@@ -77,7 +76,7 @@ public class LayoutIndexerReindexTest {
 	}
 
 	protected void setUpLayoutFixture() {
-		layoutFixture = new LayoutFixture(group);
+		layoutFixture = new LayoutFixture(_group);
 
 		_layouts = layoutFixture.getLayouts();
 	}
@@ -91,16 +90,18 @@ public class LayoutIndexerReindexTest {
 
 		userSearchFixture.setUp();
 
-		_groups = userSearchFixture.getGroups();
-		_users = userSearchFixture.getUsers();
+		_group = userSearchFixture.addGroup();
 
-		group = userSearchFixture.addGroup();
+		_groups = userSearchFixture.getGroups();
+
+		_users = userSearchFixture.getUsers();
 	}
 
-	protected Group group;
 	protected LayoutFixture layoutFixture;
-	protected IndexerFixture layoutIndexerFixture;
+	protected IndexerFixture<Layout> layoutIndexerFixture;
 	protected UserSearchFixture userSearchFixture;
+
+	private Group _group;
 
 	@DeleteAfterTestRun
 	private List<Group> _groups;

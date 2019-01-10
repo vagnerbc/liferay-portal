@@ -42,38 +42,32 @@ public class LayoutFixture {
 		_group = group;
 	}
 
-	public Layout createLayout() {
+	public Layout createLayout() throws PortalException {
 		return createLayout(RandomTestUtil.randomString());
 	}
 
-	public Layout createLayout(String name) {
-		try {
-			ServiceContext serviceContext =
-				ServiceContextTestUtil.getServiceContext();
+	public Layout createLayout(String name) throws PortalException {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext();
 
-			String friendlyURL =
-				StringPool.SLASH +
-					FriendlyURLNormalizerUtil.normalize(
-						RandomTestUtil.randomString());
+		String friendlyURL =
+			StringPool.SLASH +
+				FriendlyURLNormalizerUtil.normalize(
+					RandomTestUtil.randomString());
 
-			Layout layout = LayoutLocalServiceUtil.addLayout(
-				TestPropsValues.getUserId(), _group.getGroupId(), false,
-				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, name, null,
-				RandomTestUtil.randomString(), LayoutConstants.TYPE_PORTLET,
-				false, friendlyURL, serviceContext);
+		Layout layout = LayoutLocalServiceUtil.addLayout(
+			TestPropsValues.getUserId(), _group.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, name, null,
+			RandomTestUtil.randomString(), LayoutConstants.TYPE_PORTLET, false,
+			friendlyURL, serviceContext);
 
-			layout.setType(LAYOUT_TYPE_CONTENT);
+		layout.setType(LAYOUT_TYPE_CONTENT);
 
-			LayoutLocalServiceUtil.updateLayout(layout);
+		LayoutLocalServiceUtil.updateLayout(layout);
 
-			_layouts.add(layout);
+		_layouts.add(layout);
 
-			return layout;
-		}
-		catch (PortalException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return layout;
 	}
 
 	public List<Layout> getLayouts() {

@@ -67,8 +67,8 @@ public class LayoutIndexerIndexedFieldsTest {
 	public void setUp() throws Exception {
 		setUpUserSearchFixture();
 		setUpIndexedFieldsFixture();
-		setUpLayoutIndexerFixture();
 		setUpLayoutFixture();
+		setUpLayoutIndexerFixture();
 
 		defaultLocale = LocaleThreadLocal.getDefaultLocale();
 	}
@@ -88,13 +88,13 @@ public class LayoutIndexerIndexedFieldsTest {
 
 		String searchTerm = "新しい";
 
-		Document document = layoutIndexerFixture.searchOnlyOne(searchTerm);
+		Document document = layoutIndexerFixture.searchOnlyOne(
+			searchTerm, locale);
 
 		indexedFieldsFixture.postProcessDocument(document);
 
-		Map<String, String> expected = _expectedFieldValues(layout);
-
-		FieldValuesAssert.assertFieldValues(expected, document, searchTerm);
+		FieldValuesAssert.assertFieldValues(
+			_expectedFieldValues(layout), document, searchTerm);
 	}
 
 	protected void setTestLocale(Locale locale) throws Exception {
@@ -108,7 +108,7 @@ public class LayoutIndexerIndexedFieldsTest {
 	}
 
 	protected void setUpLayoutFixture() {
-		layoutFixture = new LayoutFixture(group);
+		layoutFixture = new LayoutFixture(_group);
 
 		_layouts = layoutFixture.getLayouts();
 	}
@@ -122,17 +122,17 @@ public class LayoutIndexerIndexedFieldsTest {
 
 		userSearchFixture.setUp();
 
-		_groups = userSearchFixture.getGroups();
-		_users = userSearchFixture.getUsers();
+		_group = userSearchFixture.addGroup();
 
-		group = userSearchFixture.addGroup();
+		_groups = userSearchFixture.getGroups();
+
+		_users = userSearchFixture.getUsers();
 	}
 
 	protected Locale defaultLocale;
-	protected Group group;
 	protected IndexedFieldsFixture indexedFieldsFixture;
 	protected LayoutFixture layoutFixture;
-	protected IndexerFixture layoutIndexerFixture;
+	protected IndexerFixture<Layout> layoutIndexerFixture;
 
 	@Inject
 	protected ResourcePermissionLocalService resourcePermissionLocalService;
@@ -148,41 +148,26 @@ public class LayoutIndexerIndexedFieldsTest {
 		Map<String, String> map = new HashMap<>();
 
 		map.put(Field.COMPANY_ID, String.valueOf(layout.getCompanyId()));
-
+		map.put(Field.DEFAULT_LANGUAGE_ID, layout.getDefaultLanguageId());
+		map.put(Field.ENTRY_CLASS_NAME, Layout.class.getName());
+		map.put(Field.ENTRY_CLASS_PK, String.valueOf(layout.getPrimaryKey()));
+		map.put(Field.GROUP_ID, String.valueOf(layout.getGroupId()));
+		map.put(Field.SCOPE_GROUP_ID, String.valueOf(layout.getGroupId()));
+		map.put(Field.STAGING_GROUP, "false");
+		map.put(Field.TYPE, layout.getType());
+		map.put(Field.USER_ID, String.valueOf(layout.getUserId()));
+		map.put(Field.USER_NAME, StringUtil.toLowerCase(layout.getUserName()));
 		map.put("leftPlid", String.valueOf(layout.getLeftPlid()));
-
 		map.put(
 			"leftPlid_Number_sortable", String.valueOf(layout.getLeftPlid()));
-
 		map.put("privateLayout", "false");
-
 		map.put("title_ja_JP", layout.getName(Locale.JAPAN));
-
-		map.put(Field.TYPE, layout.getType());
-
-		map.put(Field.ENTRY_CLASS_PK, String.valueOf(layout.getPrimaryKey()));
-
-		map.put(Field.ENTRY_CLASS_NAME, Layout.class.getName());
-
-		map.put(Field.GROUP_ID, String.valueOf(layout.getGroupId()));
-
-		map.put(Field.SCOPE_GROUP_ID, String.valueOf(layout.getGroupId()));
-
-		map.put(Field.STAGING_GROUP, "false");
-
-		map.put(Field.USER_ID, String.valueOf(layout.getUserId()));
-
-		map.put(Field.USER_NAME, StringUtil.toLowerCase(layout.getUserName()));
-
-		map.put(Field.DEFAULT_LANGUAGE_ID, layout.getDefaultLanguageId());
 
 		indexedFieldsFixture.populateUID(
 			Layout.class.getName(), layout.getPrimaryKey(), map);
 
 		_populateName(layout, map);
-
 		_populateDates(layout, map);
-
 		_populateRoles(layout, map);
 
 		return map;
@@ -214,6 +199,8 @@ public class LayoutIndexerIndexedFieldsTest {
 			layout.getCompanyId(), Layout.class.getName(),
 			layout.getPrimaryKey(), layout.getGroupId(), null, map);
 	}
+
+	private Group _group;
 
 	@DeleteAfterTestRun
 	private List<Group> _groups;
