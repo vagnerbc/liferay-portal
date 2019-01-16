@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.search.IndexWriterHelperUtil;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchContext;
-import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 
 import java.util.Locale;
@@ -36,56 +35,79 @@ public class IndexerFixture<T> {
 		_indexer = IndexerRegistryUtil.getIndexer(clazz);
 	}
 
-	public void deleteDocument(Document document)
-		throws PortalException, SearchException {
+	public void deleteDocument(Document document, long companyId)
+		throws PortalException {
 
 		IndexWriterHelperUtil.deleteDocument(
-			_indexer.getSearchEngineId(), TestPropsValues.getCompanyId(),
-			document.getUID(), true);
+			_indexer.getSearchEngineId(), companyId, document.getUID(), true);
 	}
 
 	public void reindex(long companyId) throws Exception {
 		_indexer.reindex(new String[] {String.valueOf(companyId)});
 	}
 
-	public void searchNoOne(long userId, String keywords, Locale locale)
+	public void searchNoOne(
+			long userId, long companyId, String keywords, Locale locale)
 		throws Exception {
 
 		SearchContext searchContext = SearchContextTestUtil.getSearchContext(
-			userId, keywords, locale);
+			userId, companyId, null, keywords, locale);
 
 		Hits hits = _indexer.search(searchContext);
 
 		HitsAssert.assertNoHits(hits);
 	}
 
+	public void searchNoOne(long companyId, String keywords, Locale locale)
+		throws Exception {
+
+		searchNoOne(TestPropsValues.getUserId(), companyId, keywords, locale);
+	}
+
 	public void searchNoOne(String keywords) throws Exception {
-		searchNoOne(TestPropsValues.getUserId(), keywords, null);
+		searchNoOne(
+			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+			keywords, null);
 	}
 
 	public void searchNoOne(String keywords, Locale locale) throws Exception {
-		searchNoOne(TestPropsValues.getUserId(), keywords, locale);
+		searchNoOne(
+			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+			keywords, locale);
 	}
 
-	public Document searchOnlyOne(long userId, String keywords, Locale locale)
+	public Document searchOnlyOne(
+			long userId, long companyId, String keywords, Locale locale)
 		throws Exception {
 
 		SearchContext searchContext = SearchContextTestUtil.getSearchContext(
-			userId, keywords, locale);
+			userId, companyId, null, keywords, locale);
 
 		Hits hits = _indexer.search(searchContext);
 
 		return HitsAssert.assertOnlyOne(hits);
 	}
 
+	public Document searchOnlyOne(
+			long companyId, String keywords, Locale locale)
+		throws Exception {
+
+		return searchOnlyOne(
+			TestPropsValues.getUserId(), companyId, keywords, locale);
+	}
+
 	public Document searchOnlyOne(String keywords) throws Exception {
-		return searchOnlyOne(TestPropsValues.getUserId(), keywords, null);
+		return searchOnlyOne(
+			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+			keywords, null);
 	}
 
 	public Document searchOnlyOne(String keywords, Locale locale)
 		throws Exception {
 
-		return searchOnlyOne(TestPropsValues.getUserId(), keywords, locale);
+		return searchOnlyOne(
+			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+			keywords, locale);
 	}
 
 	private final Indexer<T> _indexer;

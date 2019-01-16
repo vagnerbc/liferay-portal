@@ -27,25 +27,25 @@ import java.util.Locale;
  */
 public class SearchContextTestUtil {
 
-	public static SearchContext getSearchContext() throws Exception {
+	public static SearchContext getSearchContext() throws PortalException {
 		return getSearchContext(TestPropsValues.getGroupId());
 	}
 
 	public static SearchContext getSearchContext(long groupId)
-		throws Exception {
+		throws PortalException {
 
 		return getSearchContext(
-			TestPropsValues.getUserId(), new long[] {groupId}, StringPool.BLANK,
-			null);
+			TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+			new long[] {groupId}, StringPool.BLANK, null);
 	}
 
 	public static SearchContext getSearchContext(
-			long userId, long[] groupIds, String keywords, Locale locale)
-		throws PortalException {
+		long userId, long companyId, long[] groupIds, String keywords,
+		Locale locale) {
 
 		SearchContext searchContext = new SearchContext();
 
-		searchContext.setCompanyId(TestPropsValues.getCompanyId());
+		searchContext.setCompanyId(companyId);
 		searchContext.setKeywords(keywords);
 		searchContext.setGroupIds(groupIds);
 		searchContext.setLocale(locale);
@@ -62,7 +62,8 @@ public class SearchContextTestUtil {
 			long userId, String keywords, Locale locale)
 		throws PortalException {
 
-		return getSearchContext(userId, null, keywords, locale);
+		return getSearchContext(
+			userId, TestPropsValues.getCompanyId(), null, keywords, locale);
 	}
 
 }
