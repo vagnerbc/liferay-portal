@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.test.util.IndexerFixture;
 import com.liferay.portal.test.rule.Inject;
@@ -74,17 +75,20 @@ public class ContactIndexerReindexTest {
 
 		String searchTerm = firstName;
 
+		long companyId = TestPropsValues.getCompanyId();
+
 		Document document = contactIndexerFixture.searchOnlyOne(
-			user.getUserId(), searchTerm, locale);
+			user.getUserId(), companyId, searchTerm, locale);
 
-		contactIndexerFixture.deleteDocument(document);
+		contactIndexerFixture.deleteDocument(document, companyId);
 
-		contactIndexerFixture.searchNoOne(user.getUserId(), searchTerm, locale);
+		contactIndexerFixture.searchNoOne(
+			user.getUserId(), companyId, searchTerm, locale);
 
 		contactIndexerFixture.reindex(contact.getCompanyId());
 
 		contactIndexerFixture.searchOnlyOne(
-			user.getUserId(), searchTerm, locale);
+			user.getUserId(), companyId, searchTerm, locale);
 	}
 
 	protected void setUpContactFixture() throws Exception {

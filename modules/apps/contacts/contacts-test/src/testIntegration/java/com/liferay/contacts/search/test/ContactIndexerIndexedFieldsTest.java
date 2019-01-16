@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
@@ -83,7 +84,8 @@ public class ContactIndexerIndexedFieldsTest {
 		String searchTerm = contact.getFullName();
 
 		Document document = contactIndexerFixture.searchOnlyOne(
-			user.getUserId(), searchTerm, locale);
+			user.getUserId(), TestPropsValues.getCompanyId(), searchTerm,
+			locale);
 
 		indexedFieldsFixture.postProcessDocument(document);
 
