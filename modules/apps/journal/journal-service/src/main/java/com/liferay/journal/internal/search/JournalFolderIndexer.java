@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.FolderIndexer;
 import com.liferay.portal.kernel.search.IndexWriterHelper;
-import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
@@ -42,13 +41,11 @@ import java.util.Locale;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 /**
  * @author Eduardo García
+ * @deprecated As of Judson (7.1.x), since 7.1.0
  */
-@Component(immediate = true, service = Indexer.class)
+@Deprecated
 public class JournalFolderIndexer
 	extends BaseIndexer<JournalFolder> implements FolderIndexer {
 
@@ -192,7 +189,6 @@ public class JournalFolderIndexer
 		indexableActionableDynamicQuery.performActions();
 	}
 
-	@Reference(unbind = "-")
 	protected void setJournalFolderLocalService(
 		JournalFolderLocalService journalFolderLocalService) {
 
@@ -202,18 +198,10 @@ public class JournalFolderIndexer
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalFolderIndexer.class);
 
-	@Reference
 	private IndexWriterHelper _indexWriterHelper;
-
 	private JournalFolderLocalService _journalFolderLocalService;
-
-	@Reference(
-		target = "(model.class.name=com.liferay.journal.model.JournalFolder)"
-	)
 	private ModelResourcePermission<JournalFolder>
 		_journalFolderModelResourcePermission;
-
-	@Reference
 	private TrashHelper _trashHelper;
 
 }
