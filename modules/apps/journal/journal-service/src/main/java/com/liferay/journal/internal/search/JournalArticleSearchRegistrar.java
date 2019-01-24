@@ -29,12 +29,6 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Harry Mark
- * @author Bruno Farache
- * @author Raymond Augé
- * @author Hugo Huijser
- * @author Tibor Lipusz
  * @author Vagner B.C
  */
 @Component(immediate = true, service = {})

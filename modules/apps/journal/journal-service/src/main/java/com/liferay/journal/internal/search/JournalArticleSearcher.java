@@ -21,12 +21,6 @@ import com.liferay.portal.kernel.search.Field;
 import org.osgi.service.component.annotations.Component;
 
 /**
- * @author Brian Wing Shun Chan
- * @author Harry Mark
- * @author Bruno Farache
- * @author Raymond Augé
- * @author Hugo Huijser
- * @author Tibor Lipusz
  * @author Vagner B.C
  */
 @Component(
