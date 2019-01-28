@@ -406,7 +406,7 @@ public class JournalArticleMultiLanguageSearchSummaryTest {
 
 		SearchContext searchContext = SearchContextTestUtil.getSearchContext(
 			_user.getUserId(), new long[] {_group.getGroupId()}, searchTerm,
-			locale, true);
+			locale, true, null);
 
 		try {
 			Hits hits = _indexer.search(searchContext);
