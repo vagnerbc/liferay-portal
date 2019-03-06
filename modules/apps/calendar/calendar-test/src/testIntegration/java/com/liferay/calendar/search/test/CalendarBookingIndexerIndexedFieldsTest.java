@@ -177,7 +177,8 @@ public class CalendarBookingIndexerIndexedFieldsTest
 	}
 
 	protected void populateCalendarBooking(
-		CalendarBooking calendarBooking, Map<String, String> map) {
+			CalendarBooking calendarBooking, Map<String, String> map)
+		throws Exception {
 
 		map.put(
 			Field.CLASS_PK, String.valueOf(calendarBooking.getCalendarId()));
@@ -197,6 +198,8 @@ public class CalendarBookingIndexerIndexedFieldsTest
 			String.valueOf(calendarBooking.getStartTime()));
 
 		populateDates(calendarBooking, map);
+		indexedFieldsFixture.populateViewCount(
+			CalendarBooking.class, calendarBooking.getCalendarBookingId(), map);
 	}
 
 	protected void populateCalendarResource(
