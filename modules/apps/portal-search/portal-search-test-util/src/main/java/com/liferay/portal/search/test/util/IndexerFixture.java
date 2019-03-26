@@ -53,6 +53,17 @@ public class IndexerFixture<T> {
 		}
 	}
 
+	public void deleteDocument(Document document, long companyId) {
+		try {
+			IndexWriterHelperUtil.deleteDocument(
+				_indexer.getSearchEngineId(), companyId, document.getUID(),
+				true);
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
+	}
+
 	public void deleteDocuments(Document[] docs) {
 		try {
 			Stream<Document> stream = Arrays.stream(docs);
@@ -100,22 +111,28 @@ public class IndexerFixture<T> {
 		}
 	}
 
-	public void searchNoOne(long userId, String keywords, Locale locale) {
-		searchNoOne(userId, keywords, locale, null);
-	}
-
 	public void searchNoOne(
-		long userId, String keywords, Locale locale,
+		long userId, long companyId, String keywords, Locale locale,
 		Map<String, Serializable> attributes) {
 
 		try {
 			SearchContext searchContext =
 				SearchContextTestUtil.getSearchContext(
-					userId, null, keywords, locale, attributes);
+					userId, companyId, null, keywords, locale, attributes);
 
 			Hits hits = _indexer.search(searchContext);
 
 			HitsAssert.assertNoHits(hits);
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
+	}
+
+	public void searchNoOne(long userId, String keywords, Locale locale) {
+		try {
+			searchNoOne(
+				userId, TestPropsValues.getCompanyId(), keywords, locale, null);
 		}
 		catch (PortalException pe) {
 			throw new RuntimeException(pe);
@@ -130,12 +147,41 @@ public class IndexerFixture<T> {
 		searchNoOne(keywords, locale, null);
 	}
 
+	public void searchNoOne(String keywords, Locale locale, long company) {
+		try {
+			searchNoOne(
+				TestPropsValues.getUserId(), company, keywords, locale, null);
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
+	}
+
 	public void searchNoOne(
 		String keywords, Locale locale, Map<String, Serializable> attributes) {
 
 		try {
 			searchNoOne(
-				TestPropsValues.getUserId(), keywords, locale, attributes);
+				TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+				keywords, locale, attributes);
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
+	}
+
+	public Document searchOnlyOne(
+		long userId, long companyId, String keywords, Locale locale,
+		Map<String, Serializable> attributes) {
+
+		try {
+			SearchContext searchContext =
+				SearchContextTestUtil.getSearchContext(
+					userId, companyId, null, keywords, locale, attributes);
+
+			Hits hits = _indexer.search(searchContext);
+
+			return HitsAssert.assertOnlyOne(hits);
 		}
 		catch (PortalException pe) {
 			throw new RuntimeException(pe);
@@ -143,21 +189,9 @@ public class IndexerFixture<T> {
 	}
 
 	public Document searchOnlyOne(long userId, String keywords, Locale locale) {
-		return searchOnlyOne(userId, keywords, locale, null);
-	}
-
-	public Document searchOnlyOne(
-		long userId, String keywords, Locale locale,
-		Map<String, Serializable> attributes) {
-
 		try {
-			SearchContext searchContext =
-				SearchContextTestUtil.getSearchContext(
-					userId, null, keywords, locale, attributes);
-
-			Hits hits = _indexer.search(searchContext);
-
-			return HitsAssert.assertOnlyOne(hits);
+			return searchOnlyOne(
+				userId, TestPropsValues.getCompanyId(), keywords, locale, null);
 		}
 		catch (PortalException pe) {
 			throw new RuntimeException(pe);
@@ -173,11 +207,24 @@ public class IndexerFixture<T> {
 	}
 
 	public Document searchOnlyOne(
+		String keywords, Locale locale, long company) {
+
+		try {
+			return searchOnlyOne(
+				TestPropsValues.getUserId(), company, keywords, locale, null);
+		}
+		catch (PortalException pe) {
+			throw new RuntimeException(pe);
+		}
+	}
+
+	public Document searchOnlyOne(
 		String keywords, Locale locale, Map<String, Serializable> attributes) {
 
 		try {
 			return searchOnlyOne(
-				TestPropsValues.getUserId(), keywords, locale, attributes);
+				TestPropsValues.getUserId(), TestPropsValues.getCompanyId(),
+				keywords, locale, attributes);
 		}
 		catch (PortalException pe) {
 			throw new RuntimeException(pe);
