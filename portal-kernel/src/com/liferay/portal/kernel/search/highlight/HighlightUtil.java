@@ -18,10 +18,14 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +42,11 @@ public class HighlightUtil {
 	public static final String[] HIGHLIGHTS = {
 		"<span class=\"highlight\">", "</span>"
 	};
+
+	public static final List<Locale> nonBoundaryLocales = Arrays.asList(
+		LocaleUtil.JAPAN, LocaleUtil.JAPANESE, LocaleUtil.CHINA,
+		LocaleUtil.CHINESE, LocaleUtil.SIMPLIFIED_CHINESE,
+		LocaleUtil.TRADITIONAL_CHINESE);
 
 	public static void addSnippet(
 		Document document, Set<String> queryTerms, String snippet,
@@ -66,11 +75,12 @@ public class HighlightUtil {
 	}
 
 	public static String highlight(String s, String[] queryTerms) {
-		return highlight(s, queryTerms, HIGHLIGHTS[0], HIGHLIGHTS[1]);
+		return highlight(s, queryTerms, HIGHLIGHTS[0], HIGHLIGHTS[1], null);
 	}
 
 	public static String highlight(
-		String s, String[] queryTerms, String highlight1, String highlight2) {
+		String s, String[] queryTerms, String highlight1, String highlight2,
+		Locale locale) {
 
 		if (Validator.isBlank(s) || ArrayUtil.isEmpty(queryTerms)) {
 			return s;
@@ -85,7 +95,9 @@ public class HighlightUtil {
 
 			sb.append(Pattern.quote(queryTerms[i].trim()));
 
-			sb.append(_REGEXP_WORD_BOUNDARY);
+			if ((locale == null) || !nonBoundaryLocales.contains(locale)) {
+				sb.append(_REGEXP_WORD_BOUNDARY);
+			}
 		}
 
 		Pattern pattern = Pattern.compile(

@@ -146,7 +146,7 @@ public class Summary {
 
 		text = HighlightUtil.highlight(
 			text, _queryTerms, _ESCAPE_SAFE_HIGHLIGHTS[0],
-			_ESCAPE_SAFE_HIGHLIGHTS[1]);
+			_ESCAPE_SAFE_HIGHLIGHTS[1], _locale);
 
 		if (_escape) {
 			text = HtmlUtil.escape(text);
