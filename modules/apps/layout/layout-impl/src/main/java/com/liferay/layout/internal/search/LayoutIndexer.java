@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
-import com.liferay.portal.kernel.search.highlight.HighlightUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -51,6 +50,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.batch.BatchIndexingHelper;
+import com.liferay.portal.search.highlight.HighlightHelper;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -223,12 +223,12 @@ public class LayoutIndexer extends BaseIndexer<Layout> {
 
 		Set<String> highlights = new HashSet<>();
 
-		HighlightUtil.addSnippet(document, highlights, snippet, "temp");
+		_highlightHelper.addSnippet(document, highlights, snippet, "temp");
 
-		content = HighlightUtil.highlight(
+		content = _highlightHelper.highlight(
 			content, ArrayUtil.toStringArray(highlights),
-			HighlightUtil.HIGHLIGHT_TAG_OPEN,
-			HighlightUtil.HIGHLIGHT_TAG_CLOSE);
+			HighlightHelper.HIGHLIGHT_TAG_OPEN,
+			HighlightHelper.HIGHLIGHT_TAG_CLOSE, locale);
 
 		Summary summary = new Summary(locale, name, content);
 
@@ -291,12 +291,13 @@ public class LayoutIndexer extends BaseIndexer<Layout> {
 	};
 
 	private static final String[] _HIGHLIGHT_TAGS = {
-		HighlightUtil.HIGHLIGHT_TAG_OPEN, HighlightUtil.HIGHLIGHT_TAG_CLOSE
+		HighlightHelper.HIGHLIGHT_TAG_OPEN, HighlightHelper.HIGHLIGHT_TAG_CLOSE
 	};
 
 	private static final Log _log = LogFactoryUtil.getLog(LayoutIndexer.class);
 
 	private BatchIndexingHelper _batchIndexingHelper;
+	private HighlightHelper _highlightHelper;
 	private IndexWriterHelper _indexWriterHelper;
 	private LayoutLocalService _layoutLocalService;
 	private LayoutPageTemplateStructureLocalService
