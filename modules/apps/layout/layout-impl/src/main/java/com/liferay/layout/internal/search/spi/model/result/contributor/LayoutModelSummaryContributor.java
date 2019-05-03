@@ -77,8 +77,8 @@ public class LayoutModelSummaryContributor implements ModelSummaryContributor {
 
 		content = HighlightUtil.highlight(
 			content, ArrayUtil.toStringArray(highlights),
-			HighlightUtil.HIGHLIGHT_TAG_OPEN,
-			HighlightUtil.HIGHLIGHT_TAG_CLOSE);
+			HighlightUtil.HIGHLIGHT_TAG_OPEN, HighlightUtil.HIGHLIGHT_TAG_CLOSE,
+			locale);
 
 		Summary summary = new Summary(locale, name, content);
 
