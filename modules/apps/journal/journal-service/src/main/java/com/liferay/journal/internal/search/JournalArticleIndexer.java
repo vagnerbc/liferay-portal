@@ -874,7 +874,7 @@ public class JournalArticleIndexer extends BaseIndexer<JournalArticle> {
 			content = HighlightUtil.highlight(
 				content, ArrayUtil.toStringArray(highlights),
 				HighlightUtil.HIGHLIGHT_TAG_OPEN,
-				HighlightUtil.HIGHLIGHT_TAG_CLOSE);
+				HighlightUtil.HIGHLIGHT_TAG_CLOSE, snippetLocale);
 		}
 		catch (Exception e) {
 			if (_log.isDebugEnabled()) {
