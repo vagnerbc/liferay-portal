@@ -21,17 +21,24 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.test.util.background.task.DDMStructureBackgroundTask;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Localization;
+import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexerFixture;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -41,12 +48,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author Igor Fabiano Nazar
- * @author Lucas Marques de Paula
+ * @author Vagner B.C
  */
 @RunWith(Arquillian.class)
 @Sync
-public class DLFileEntryMetadataDDMStructureIndexerTest
+public class DLFileEntryMetadataDDMStructureMultiLanguageSearchTest
 	extends BaseDLIndexerTestCase {
 
 	@ClassRule
@@ -66,10 +72,10 @@ public class DLFileEntryMetadataDDMStructureIndexerTest
 		setIndexerClass(DLFileEntry.class);
 		setUser(dlFixture.addUser());
 
-		dlFixture.updateDisplaySettings(LocaleUtil.JAPAN);
-
 		setUpDLFileEntryIndexerFixture();
 		setUpFileEntryMetadataFixture();
+
+		_defaultLocale = LocaleThreadLocal.getDefaultLocale();
 	}
 
 	@After
@@ -78,25 +84,54 @@ public class DLFileEntryMetadataDDMStructureIndexerTest
 		super.tearDown();
 
 		fileEntryMetadataFixture.tearDown();
+
+		LocaleThreadLocal.setDefaultLocale(_defaultLocale);
 	}
 
 	@Test
-	public void testReindexDLFileEntry() throws Exception {
-		Locale locale = LocaleUtil.JAPAN;
-		String fileName_jp = "content_search.txt";
-		String searchTerm = "新規";
+	public void testChineseContentReindexDLFileEntryMetadataDDMStructure()
+		throws Exception {
 
-		DDMStructure ddmStructure =
-			fileEntryMetadataFixture.createStructureWithDLFileEntry(
-				fileName_jp, locale);
+		_testLocaleContentReindexDLFileEntryMetadataDDMStructure(
+			LocaleUtil.CHINA, "locale_zh.txt", "你好");
+	}
+
+	@Test
+	public void testEnglishContentReindexDLFileEntryMetadataDDMStructure()
+		throws Exception {
+
+		_testLocaleContentReindexDLFileEntryMetadataDDMStructure(
+			LocaleUtil.US, "locale_en.txt", "LocaleTest");
+	}
+
+	@Test
+	public void testJapaneseContentReindexDLFileEntryMetadataDDMStructure()
+		throws Exception {
+
+		_testLocaleContentReindexDLFileEntryMetadataDDMStructure(
+			LocaleUtil.JAPAN, "locale_ja.txt", "新規作成");
+	}
+
+	protected Document assertFieldValues(
+		String field, Locale locale, String searchTerm) {
+
+		Localization localization = LocalizationUtil.getLocalization();
+
+		String localizedName = localization.getLocalizedName(
+			field, LanguageUtil.getLanguageId(locale));
+
+		Map<String, String> map = new HashMap<String, String>() {
+			{
+				put(localizedName, searchTerm);
+			}
+		};
 
 		Document document = indexerFixture.searchOnlyOne(searchTerm, locale);
 
-		indexerFixture.deleteDocument(document);
+		FieldValuesAssert.assertFieldValues(
+			map, localizedName, document, searchTerm);
 
-		runBackgroundTaskReindex(ddmStructure);
-
-		dlSearchFixture.searchOnlyOne(searchTerm, LocaleUtil.JAPAN);
+		return document;
 	}
 
 	protected void runBackgroundTaskReindex(DDMStructure structure)
@@ -106,6 +141,12 @@ public class DLFileEntryMetadataDDMStructureIndexerTest
 			new DDMStructureBackgroundTask(structure.getStructureId());
 
 		backgroundTaskExecutor.execute(backgroundTask);
+	}
+
+	protected void setTestLocale(Locale locale) throws Exception {
+		dlFixture.updateDisplaySettings(locale);
+
+		LocaleThreadLocal.setDefaultLocale(locale);
 	}
 
 	protected void setUpDLFileEntryIndexerFixture() {
@@ -131,5 +172,28 @@ public class DLFileEntryMetadataDDMStructureIndexerTest
 
 	protected DLFileEntryMetadataDDMStructureFixture fileEntryMetadataFixture;
 	protected IndexerFixture<DLFileEntry> indexerFixture;
+
+	private void _testLocaleContentReindexDLFileEntryMetadataDDMStructure(
+			Locale locale, String fileName, String searchTerm)
+		throws Exception {
+
+		setTestLocale(locale);
+
+		DDMStructure ddmStructure =
+			fileEntryMetadataFixture.createStructureWithDLFileEntry(
+				fileName, locale);
+
+		Document document = assertFieldValues(_CONTENT, locale, searchTerm);
+
+		indexerFixture.deleteDocument(document);
+
+		runBackgroundTaskReindex(ddmStructure);
+
+		assertFieldValues(_CONTENT, locale, searchTerm);
+	}
+
+	private static final String _CONTENT = "content";
+
+	private Locale _defaultLocale;
 
 }

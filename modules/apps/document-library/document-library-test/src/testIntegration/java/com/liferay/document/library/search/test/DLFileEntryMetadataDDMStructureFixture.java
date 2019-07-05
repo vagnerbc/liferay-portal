@@ -25,7 +25,6 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -91,7 +90,7 @@ public class DLFileEntryMetadataDDMStructureFixture {
 	}
 
 	protected FileEntry addFileEntry(String fileName, long fileEntryTypeId)
-		throws IOException, PortalException {
+		throws IOException {
 
 		Class<?> clazz = getClass();
 
@@ -138,7 +137,7 @@ public class DLFileEntryMetadataDDMStructureFixture {
 		return ddmStructure;
 	}
 
-	protected void deleteAllDDMStructures() throws PortalException {
+	protected void deleteAllDDMStructures() {
 		for (DDMStructure ddmStructure : _ddmStructures) {
 			_ddmStructureLocalService.deleteDDMStructure(ddmStructure);
 		}
@@ -146,7 +145,7 @@ public class DLFileEntryMetadataDDMStructureFixture {
 		_ddmStructures.clear();
 	}
 
-	protected void deleteAllFileEntryTypes() throws PortalException {
+	protected void deleteAllFileEntryTypes() {
 		for (DLFileEntryType dlFileEntryType : _fileEntryTypes) {
 			_dlFileEntryTypeLocalService.deleteDLFileEntryType(dlFileEntryType);
 		}
