@@ -28,9 +28,11 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.OrderFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -44,6 +46,7 @@ import java.util.List;
  */
 public class MessageLocalServiceImpl extends MessageLocalServiceBaseImpl {
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Message addMessage(
 			long userId, long folderId, String sender, String to, String cc,
@@ -85,13 +88,6 @@ public class MessageLocalServiceImpl extends MessageLocalServiceBaseImpl {
 
 		messagePersistence.update(message);
 
-		// Indexer
-
-		Indexer<Message> indexer = IndexerRegistryUtil.getIndexer(
-			Message.class);
-
-		indexer.reindex(message);
-
 		return message;
 	}
 
@@ -102,7 +98,9 @@ public class MessageLocalServiceImpl extends MessageLocalServiceBaseImpl {
 		return deleteMessage(message);
 	}
 
+	@Indexable(type = IndexableType.DELETE)
 	@Override
+	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public Message deleteMessage(Message message) throws PortalException {
 
 		// Message
@@ -113,13 +111,6 @@ public class MessageLocalServiceImpl extends MessageLocalServiceBaseImpl {
 
 		attachmentLocalService.deleteAttachments(
 			message.getCompanyId(), message.getMessageId());
-
-		// Indexer
-
-		Indexer<Message> indexer = IndexerRegistryUtil.getIndexer(
-			Message.class);
-
-		indexer.delete(message);
 
 		return message;
 	}
@@ -264,6 +255,7 @@ public class MessageLocalServiceImpl extends MessageLocalServiceBaseImpl {
 		return (int)dynamicQueryCount(countDynamicQuery);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Message updateContent(long messageId, String body, String flags)
 		throws PortalException {
@@ -301,6 +293,7 @@ public class MessageLocalServiceImpl extends MessageLocalServiceBaseImpl {
 		return messagePersistence.update(message);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Message updateMessage(
 			long messageId, long folderId, String sender, String to, String cc,
@@ -327,13 +320,6 @@ public class MessageLocalServiceImpl extends MessageLocalServiceBaseImpl {
 		message.setRemoteMessageId(remoteMessageId);
 
 		messagePersistence.update(message);
-
-		// Indexer
-
-		Indexer<Message> indexer = IndexerRegistryUtil.getIndexer(
-			Message.class);
-
-		indexer.reindex(message);
 
 		return message;
 	}
