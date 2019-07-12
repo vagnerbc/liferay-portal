@@ -17,23 +17,30 @@ package com.liferay.mail.reader.search.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.mail.reader.model.Account;
 import com.liferay.mail.reader.model.Folder;
-import com.liferay.mail.reader.model.Message;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexerFixture;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -41,10 +48,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author Luan Maoski
+ * @author Vagner B.C
  */
 @RunWith(Arquillian.class)
-public class MailReaderIndexerReindexTest {
+public class FolderMultiLanguageSearchTest {
 
 	@ClassRule
 	@Rule
@@ -58,87 +65,54 @@ public class MailReaderIndexerReindexTest {
 	public void setUp() throws Exception {
 		setUpUserSearchFixture();
 
-		setUpAccountIndexerFixture();
+		setUpMailReaderFixture();
 
 		setUpFolderIndexerFixture();
 
-		setUpMessageIndexerFixture();
+		_defaultLocale = LocaleThreadLocal.getDefaultLocale();
+	}
 
-		setUpMailReaderFixture();
+	@After
+	public void tearDown() {
+		LocaleThreadLocal.setDefaultLocale(_defaultLocale);
 	}
 
 	@Test
-	public void testReindexingAccount() throws Exception {
-		Locale locale = LocaleUtil.US;
-
-		Account account = mailReaderFixture.createAccount();
-
-		String searchTerm = _user.getFullName();
-
-		mailReaderFixture.updateDisplaySettings(locale);
-
-		Document document = _accountIndexerFixture.searchOnlyOne(
-			searchTerm, locale);
-
-		_accountIndexerFixture.deleteDocument(document);
-
-		_accountIndexerFixture.searchNoOne(searchTerm, locale);
-
-		_accountIndexerFixture.reindex(account.getCompanyId());
-
-		_accountIndexerFixture.searchOnlyOne(searchTerm);
+	public void testChineseName() throws Exception {
+		_testLocaleField(LocaleUtil.CHINA, _NAME, "你好");
 	}
 
 	@Test
-	public void testReindexingFolder() throws Exception {
-		Locale locale = LocaleUtil.US;
+	public void testEnglishName() throws Exception {
+		String keywords = RandomTestUtil.randomString();
 
-		Folder folder = mailReaderFixture.createFolder();
-
-		String searchTerm = _user.getFullName();
-
-		mailReaderFixture.updateDisplaySettings(locale);
-
-		Document document = _folderIndexerFixture.searchOnlyOne(
-			searchTerm, locale);
-
-		_folderIndexerFixture.deleteDocument(document);
-
-		_folderIndexerFixture.searchNoOne(searchTerm, locale);
-
-		_folderIndexerFixture.reindex(folder.getCompanyId());
-
-		_folderIndexerFixture.searchOnlyOne(searchTerm);
+		_testLocaleField(
+			LocaleUtil.US, _NAME, StringUtil.toLowerCase(keywords));
 	}
 
 	@Test
-	public void testReindexingMessage() throws Exception {
-		Locale locale = LocaleUtil.US;
-
-		Message message = mailReaderFixture.createMessage();
-
-		String searchTerm = message.getSubject();
-
-		mailReaderFixture.updateDisplaySettings(locale);
-
-		Document document = _messageIndexerFixture.searchOnlyOne(
-			searchTerm, locale);
-
-		_messageIndexerFixture.deleteDocument(document);
-
-		_messageIndexerFixture.searchNoOne(searchTerm, locale);
-
-		_messageIndexerFixture.reindex(message.getCompanyId());
-
-		_messageIndexerFixture.searchOnlyOne(searchTerm);
+	public void testJapaneseName() throws Exception {
+		_testLocaleField(LocaleUtil.JAPAN, _NAME, "東京");
 	}
 
-	protected void setUpAccountIndexerFixture() {
-		_accountIndexerFixture = new IndexerFixture<>(Account.class);
+	protected void assertFieldValues(
+		String prefix, Locale locale, Map<String, String> map,
+		String searchTerm) {
+
+		Document document = folderIndexerFixture.searchOnlyOne(
+			searchTerm, locale);
+
+		FieldValuesAssert.assertFieldValues(map, prefix, document, searchTerm);
+	}
+
+	protected void setTestLocale(Locale locale) throws Exception {
+		mailReaderFixture.updateDisplaySettings(locale);
+
+		LocaleThreadLocal.setDefaultLocale(locale);
 	}
 
 	protected void setUpFolderIndexerFixture() {
-		_folderIndexerFixture = new IndexerFixture<>(Folder.class);
+		folderIndexerFixture = new IndexerFixture<>(Folder.class);
 	}
 
 	protected void setUpMailReaderFixture() {
@@ -146,11 +120,6 @@ public class MailReaderIndexerReindexTest {
 
 		_accounts = mailReaderFixture.getAccounts();
 		_folders = mailReaderFixture.getFolders();
-		_messages = mailReaderFixture.getMessages();
-	}
-
-	protected void setUpMessageIndexerFixture() {
-		_messageIndexerFixture = new IndexerFixture<>(Message.class);
 	}
 
 	protected void setUpUserSearchFixture() throws Exception {
@@ -162,21 +131,43 @@ public class MailReaderIndexerReindexTest {
 
 		_groups = userSearchFixture.getGroups();
 
-		_user = userSearchFixture.addUser(
-			RandomTestUtil.randomString(), _group);
+		_user = TestPropsValues.getUser();
 
 		_users = userSearchFixture.getUsers();
 	}
 
+	protected IndexerFixture<Folder> folderIndexerFixture;
 	protected MailReaderIndexerFixture mailReaderFixture;
 	protected UserSearchFixture userSearchFixture;
 
-	private IndexerFixture<Account> _accountIndexerFixture;
+	private Map<String, String> _getResultMap(String field, String keywords) {
+		return new HashMap<String, String>() {
+			{
+				put(field, keywords);
+				put(Field.getSortableFieldName(field), keywords);
+			}
+		};
+	}
+
+	private void _testLocaleField(Locale locale, String field, String keywords)
+		throws Exception {
+
+		setTestLocale(locale);
+
+		Folder folder = mailReaderFixture.createFolder(keywords);
+
+		folderIndexerFixture.reindex(folder.getCompanyId());
+
+		assertFieldValues(
+			field, locale, _getResultMap(field, keywords), keywords);
+	}
+
+	private static final String _NAME = "name";
 
 	@DeleteAfterTestRun
 	private List<Account> _accounts;
 
-	private IndexerFixture<Folder> _folderIndexerFixture;
+	private Locale _defaultLocale;
 
 	@DeleteAfterTestRun
 	private List<Folder> _folders;
@@ -185,11 +176,6 @@ public class MailReaderIndexerReindexTest {
 
 	@DeleteAfterTestRun
 	private List<Group> _groups;
-
-	private IndexerFixture<Message> _messageIndexerFixture;
-
-	@DeleteAfterTestRun
-	private List<Message> _messages;
 
 	private User _user;
 
