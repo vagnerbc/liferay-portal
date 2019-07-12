@@ -18,9 +18,11 @@ import com.liferay.mail.reader.model.Account;
 import com.liferay.mail.reader.service.base.AccountLocalServiceBaseImpl;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Date;
@@ -31,6 +33,7 @@ import java.util.List;
  */
 public class AccountLocalServiceImpl extends AccountLocalServiceBaseImpl {
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Account addAccount(
 			long userId, String address, String personalName, String protocol,
@@ -87,7 +90,9 @@ public class AccountLocalServiceImpl extends AccountLocalServiceBaseImpl {
 		return account;
 	}
 
+	@Indexable(type = IndexableType.DELETE)
 	@Override
+	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public Account deleteAccount(Account account) throws PortalException {
 
 		// Account
@@ -97,13 +102,6 @@ public class AccountLocalServiceImpl extends AccountLocalServiceBaseImpl {
 		// Folders
 
 		folderLocalService.deleteFolders(account.getAccountId());
-
-		// Indexer
-
-		Indexer<Account> indexer = IndexerRegistryUtil.getIndexer(
-			Account.class);
-
-		indexer.delete(account);
 
 		return account;
 	}
@@ -136,6 +134,7 @@ public class AccountLocalServiceImpl extends AccountLocalServiceBaseImpl {
 		return accountPersistence.findByUserId(userId);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Account updateAccount(
 			long accountId, String personalName, String password,
@@ -166,6 +165,7 @@ public class AccountLocalServiceImpl extends AccountLocalServiceBaseImpl {
 		return account;
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Account updateFolders(
 			long accountId, long inboxFolderId, long draftFolderId,

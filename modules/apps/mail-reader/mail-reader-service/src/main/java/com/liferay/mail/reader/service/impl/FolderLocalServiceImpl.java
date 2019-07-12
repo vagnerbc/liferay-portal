@@ -17,9 +17,11 @@ package com.liferay.mail.reader.service.impl;
 import com.liferay.mail.reader.model.Folder;
 import com.liferay.mail.reader.service.base.FolderLocalServiceBaseImpl;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.Indexer;
-import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
+import com.liferay.portal.kernel.systemevent.SystemEvent;
 
 import java.util.Date;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.List;
  */
 public class FolderLocalServiceImpl extends FolderLocalServiceBaseImpl {
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Folder addFolder(
 			long userId, long accountId, String fullName, String displayName,
@@ -57,7 +60,9 @@ public class FolderLocalServiceImpl extends FolderLocalServiceBaseImpl {
 		return folder;
 	}
 
+	@Indexable(type = IndexableType.DELETE)
 	@Override
+	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public Folder deleteFolder(Folder folder) throws PortalException {
 
 		// Folder
@@ -67,12 +72,6 @@ public class FolderLocalServiceImpl extends FolderLocalServiceBaseImpl {
 		// Messages
 
 		messageLocalService.deleteMessages(folder.getFolderId());
-
-		// Indexer
-
-		Indexer<Folder> indexer = IndexerRegistryUtil.getIndexer(Folder.class);
-
-		indexer.delete(folder);
 
 		return folder;
 	}
@@ -138,6 +137,7 @@ public class FolderLocalServiceImpl extends FolderLocalServiceBaseImpl {
 		return (int)Math.ceil(remoteMessageCount / (double)messagesPerPage);
 	}
 
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public Folder updateFolder(
 			long folderId, String fullName, String displayName,
