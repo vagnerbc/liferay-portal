@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,16 +42,20 @@ public class MailReaderIndexerFixture {
 	}
 
 	public Account createAccount() throws Exception {
+		return createAccount(
+			StringUtil.toLowerCase(RandomTestUtil.randomString()));
+	}
+
+	public Account createAccount(String address) throws Exception {
 		String protocol = "imap";
 		String incomingHostName = "imap.gmail.com";
 		String outgoingHostName = "smtp.gmail.com";
 
 		Account account = AccountLocalServiceUtil.addAccount(
-			_user.getUserId(), "teste@liferay.com",
-			RandomTestUtil.randomString(), protocol, incomingHostName, 993,
-			true, outgoingHostName, 465, true, _user.getLogin(),
-			_user.getPassword(), false, RandomTestUtil.randomString(), false,
-			"", 0, 0, 0, 0, false);
+			_user.getUserId(), address, RandomTestUtil.randomString(), protocol,
+			incomingHostName, 993, true, outgoingHostName, 465, true,
+			_user.getLogin(), _user.getPassword(), false,
+			RandomTestUtil.randomString(), false, "", 0, 0, 0, 0, false);
 
 		_accounts.add(account);
 
@@ -58,11 +63,17 @@ public class MailReaderIndexerFixture {
 	}
 
 	public Folder createFolder() throws Exception {
+		return createFolder(
+			StringUtil.toLowerCase(RandomTestUtil.randomString()));
+	}
+
+	public Folder createFolder(String name) throws Exception {
 		Account account = createAccount();
 
 		Folder folder = FolderLocalServiceUtil.addFolder(
-			_user.getUserId(), account.getAccountId(),
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(), 0);
+			_user.getUserId(), account.getAccountId(), name, name, 0);
+
+		_accounts.add(account);
 
 		_folders.add(folder);
 
@@ -70,14 +81,20 @@ public class MailReaderIndexerFixture {
 	}
 
 	public Message createMessage() throws Exception {
+		return createMessage(
+			RandomTestUtil.randomString(), RandomTestUtil.randomString());
+	}
+
+	public Message createMessage(String title, String content)
+		throws Exception {
+
 		String sender = "test@liferay.com";
 		String to = "test2@liferay.com";
 		Folder folder = createFolder();
 
 		Message message = MessageLocalServiceUtil.addMessage(
 			_user.getUserId(), folder.getFolderId(), sender, to, "", "",
-			new Date(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), "", 0, "");
+			new Date(), title, content, "", 0, "");
 
 		_messages.add(message);
 
