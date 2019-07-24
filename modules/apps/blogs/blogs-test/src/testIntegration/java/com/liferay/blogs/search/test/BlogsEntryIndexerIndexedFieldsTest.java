@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
@@ -125,8 +126,6 @@ public class BlogsEntryIndexerIndexedFieldsTest {
 		map.put(Field.USER_ID, String.valueOf(blogsEntry.getUserId()));
 		map.put(
 			Field.USER_NAME, StringUtil.lowerCase(blogsEntry.getUserName()));
-		map.put("localized_title", StringUtil.lowerCase(blogsEntry.getTitle()));
-		map.put("title_sortable", StringUtil.lowerCase(blogsEntry.getTitle()));
 		map.put("visible", "true");
 
 		indexedFieldsFixture.populateUID(
@@ -135,24 +134,11 @@ public class BlogsEntryIndexerIndexedFieldsTest {
 		indexedFieldsFixture.populateViewCount(
 			BlogsEntry.class, blogsEntry.getEntryId(), map);
 
-		_populateContent(blogsEntry, map);
 		_populateDates(blogsEntry, map);
+		_populateLocalizedValues(blogsEntry, map);
 		_populateRoles(blogsEntry, map);
-		_populateTitle(blogsEntry, map);
 
 		return map;
-	}
-
-	private void _populateContent(
-		BlogsEntry blogsEntry, Map<String, String> map) {
-
-		for (Locale locale :
-				LanguageUtil.getAvailableLocales(blogsEntry.getGroupId())) {
-
-			map.put(
-				"content_" + LocaleUtil.toLanguageId(locale),
-				HtmlUtil.extractText(blogsEntry.getContent()));
-		}
 	}
 
 	private void _populateDates(
@@ -169,30 +155,48 @@ public class BlogsEntryIndexerIndexedFieldsTest {
 		indexedFieldsFixture.populateExpirationDateWithForever(map);
 	}
 
+	private void _populateLocalizedValues(
+		BlogsEntry blogsEntry, Map<String, String> map) {
+
+		String title = StringUtil.lowerCase(blogsEntry.getTitle());
+
+		map.put(_LOCALIZED + Field.TITLE, title);
+		map.put(Field.getSortableFieldName(Field.TITLE), title);
+
+		for (Locale locale :
+				LanguageUtil.getAvailableLocales(blogsEntry.getGroupId())) {
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			title = StringUtil.lowerCase(blogsEntry.getTitle());
+
+			String localizedTitle = LocalizationUtil.getLocalizedName(
+				Field.TITLE, languageId);
+
+			map.put(localizedTitle, title);
+
+			map.put(_LOCALIZED + localizedTitle, title);
+
+			map.put(
+				Field.getSortableFieldName(_LOCALIZED + localizedTitle), title);
+
+			map.put(
+				LocalizationUtil.getLocalizedName(Field.CONTENT, languageId),
+				HtmlUtil.extractText(blogsEntry.getContent()));
+
+			map.put(
+				LocalizationUtil.getLocalizedName(
+					Field.DESCRIPTION, languageId),
+				blogsEntry.getDescription());
+		}
+	}
+
 	private void _populateRoles(BlogsEntry blogsEntry, Map<String, String> map)
 		throws Exception {
 
 		indexedFieldsFixture.populateRoleIdFields(
 			blogsEntry.getCompanyId(), BlogsEntry.class.getName(),
 			blogsEntry.getEntryId(), blogsEntry.getGroupId(), null, map);
-	}
-
-	private void _populateTitle(
-		BlogsEntry blogsEntry, Map<String, String> map) {
-
-		for (Locale locale :
-				LanguageUtil.getAvailableLocales(blogsEntry.getGroupId())) {
-
-			String title = StringUtil.lowerCase(blogsEntry.getTitle());
-
-			String languageId = LocaleUtil.toLanguageId(locale);
-
-			String key = "title_" + languageId;
-
-			map.put(key, title);
-			map.put("localized_" + key, title);
-			map.put("localized_" + key + "_sortable", title);
-		}
 	}
 
 	private void _setUpBlogsEntryFixture() {
@@ -221,6 +225,8 @@ public class BlogsEntryIndexerIndexedFieldsTest {
 
 		_users = userSearchFixture.getUsers();
 	}
+
+	private static final String _LOCALIZED = "localized_";
 
 	@DeleteAfterTestRun
 	private List<BlogsEntry> _blogsEntries;
