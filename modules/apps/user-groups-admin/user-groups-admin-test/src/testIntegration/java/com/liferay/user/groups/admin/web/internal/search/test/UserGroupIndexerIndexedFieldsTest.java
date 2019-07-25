@@ -20,6 +20,8 @@ import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
@@ -31,6 +33,8 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.ExpandoTableSearchFixture;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
@@ -45,6 +49,7 @@ import java.io.Serializable;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Before;
@@ -187,7 +192,6 @@ public class UserGroupIndexerIndexedFieldsTest {
 		Map<String, String> map = new HashMap<>();
 
 		map.put(Field.COMPANY_ID, String.valueOf(userGroup.getCompanyId()));
-		map.put(Field.DESCRIPTION, userGroup.getDescription());
 		map.put(Field.ENTRY_CLASS_NAME, UserGroup.class.getName());
 		map.put(
 			Field.ENTRY_CLASS_PK, String.valueOf(userGroup.getUserGroupId()));
@@ -202,6 +206,7 @@ public class UserGroupIndexerIndexedFieldsTest {
 			UserGroup.class.getName(), userGroup.getUserGroupId(), map);
 
 		_populateDates(userGroup, map);
+		_populateLocalizedValues(userGroup, map);
 		_populateRoles(userGroup, map);
 
 		return map;
@@ -229,6 +234,24 @@ public class UserGroupIndexerIndexedFieldsTest {
 			Field.CREATE_DATE, userGroup.getCreateDate(), map);
 		indexedFieldsFixture.populateDate(
 			Field.MODIFIED_DATE, userGroup.getModifiedDate(), map);
+	}
+
+	private void _populateLocalizedValues(
+			UserGroup userGroup, Map<String, String> map)
+		throws PortalException {
+
+		map.put(Field.DESCRIPTION, userGroup.getDescription());
+
+		for (Locale locale :
+				LanguageUtil.getAvailableLocales(userGroup.getGroupId())) {
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			map.put(
+				LocalizationUtil.getLocalizedName(
+					Field.DESCRIPTION, languageId),
+				userGroup.getDescription());
+		}
 	}
 
 	private void _populateRoles(UserGroup userGroup, Map<String, String> map)
