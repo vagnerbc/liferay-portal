@@ -16,15 +16,18 @@ package com.liferay.bookmarks.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.bookmarks.model.BookmarksFolder;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexerFixture;
@@ -76,62 +79,19 @@ public class BookmarksFolderMultiLanguageSearchTest {
 
 	@Test
 	public void testChineseTitle() throws Exception {
-		Locale locale = LocaleUtil.CHINA;
-
-		setTestLocale(locale);
-
-		String keyWords = "你好";
-
-		bookmarksFixture.createBookmarksFolder(keyWords);
-
-		Map<String, String> map = new HashMap<String, String>() {
-			{
-				put(_PREFIX, keyWords);
-				put(_PREFIX + "_sortable", keyWords);
-			}
-		};
-
-		assertFieldValues(_PREFIX, locale, map, keyWords);
+		_testLocaleField(LocaleUtil.CHINA, _TITLE, "你好");
 	}
 
 	@Test
 	public void testEnglishTitle() throws Exception {
-		Locale locale = LocaleUtil.US;
-
-		setTestLocale(locale);
-
 		String keyWords = StringUtil.toLowerCase(RandomTestUtil.randomString());
 
-		bookmarksFixture.createBookmarksFolder(keyWords);
-
-		Map<String, String> map = new HashMap<String, String>() {
-			{
-				put(_PREFIX, keyWords);
-				put(_PREFIX + "_sortable", keyWords);
-			}
-		};
-
-		assertFieldValues(_PREFIX, locale, map, keyWords);
+		_testLocaleField(LocaleUtil.US, _TITLE, keyWords);
 	}
 
 	@Test
 	public void testJapaneseTitle() throws Exception {
-		Locale locale = LocaleUtil.JAPAN;
-
-		setTestLocale(locale);
-
-		String keyWords = "東京";
-
-		bookmarksFixture.createBookmarksFolder(keyWords);
-
-		Map<String, String> map = new HashMap<String, String>() {
-			{
-				put(_PREFIX, keyWords);
-				put(_PREFIX + "_sortable", keyWords);
-			}
-		};
-
-		assertFieldValues(_PREFIX, locale, map, keyWords);
+		_testLocaleField(LocaleUtil.JAPAN, _TITLE, "東京");
 	}
 
 	protected void assertFieldValues(
@@ -180,7 +140,38 @@ public class BookmarksFolderMultiLanguageSearchTest {
 	protected IndexerFixture<BookmarksFolder> bookmarksFolderIndexerFixture;
 	protected UserSearchFixture userSearchFixture;
 
-	private static final String _PREFIX = "title";
+	private Map<String, String> _getResultMap(String field, String keyWords) {
+		return new HashMap<String, String>() {
+			{
+				put(field, keyWords);
+				put(Field.getSortableFieldName(field), keyWords);
+
+				for (Locale locale :
+						LanguageUtil.getAvailableLocales(_group.getGroupId())) {
+
+					String languageId = LocaleUtil.toLanguageId(locale);
+
+					put(
+						LocalizationUtil.getLocalizedName(field, languageId),
+						keyWords);
+				}
+			}
+		};
+	}
+
+	private void _testLocaleField(Locale locale, String field, String keyWords)
+		throws Exception {
+
+		setTestLocale(locale);
+
+		bookmarksFixture.createBookmarksFolder(keyWords);
+
+		Map<String, String> map = _getResultMap(field, keyWords);
+
+		assertFieldValues(field, locale, map, keyWords);
+	}
+
+	private static final String _TITLE = "title";
 
 	@DeleteAfterTestRun
 	private List<BookmarksFolder> _bookmarksFolders;

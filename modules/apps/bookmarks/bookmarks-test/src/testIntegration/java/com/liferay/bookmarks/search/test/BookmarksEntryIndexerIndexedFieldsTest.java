@@ -17,6 +17,7 @@ package com.liferay.bookmarks.search.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.bookmarks.model.BookmarksEntry;
 import com.liferay.bookmarks.model.BookmarksFolder;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
@@ -28,6 +29,8 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
@@ -39,6 +42,7 @@ import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Before;
@@ -144,7 +148,6 @@ public class BookmarksEntryIndexerIndexedFieldsTest {
 
 		map.put(
 			Field.COMPANY_ID, String.valueOf(bookmarksEntry.getCompanyId()));
-		map.put(Field.DESCRIPTION, bookmarksEntry.getDescription());
 		map.put(Field.ENTRY_CLASS_NAME, BookmarksEntry.class.getName());
 		map.put(
 			Field.ENTRY_CLASS_PK, String.valueOf(bookmarksEntry.getEntryId()));
@@ -154,14 +157,11 @@ public class BookmarksEntryIndexerIndexedFieldsTest {
 			Field.SCOPE_GROUP_ID, String.valueOf(bookmarksEntry.getGroupId()));
 		map.put(Field.STAGING_GROUP, String.valueOf(_group.isStagingGroup()));
 		map.put(Field.STATUS, String.valueOf(bookmarksEntry.getStatus()));
-		map.put(Field.TITLE, bookmarksEntry.getName());
 		map.put(Field.URL, bookmarksEntry.getUrl());
 		map.put(Field.USER_ID, String.valueOf(bookmarksEntry.getUserId()));
 		map.put(
 			Field.USER_NAME,
 			StringUtil.lowerCase(bookmarksEntry.getUserName()));
-		map.put(
-			"title_sortable", StringUtil.lowerCase(bookmarksEntry.getName()));
 		map.put("visible", "true");
 
 		bookmarksFixture.populateLocalizedTitles(bookmarksEntry.getName(), map);
@@ -174,6 +174,7 @@ public class BookmarksEntryIndexerIndexedFieldsTest {
 			BookmarksEntry.class, bookmarksEntry.getEntryId(), map);
 
 		_populateDates(bookmarksEntry, map);
+		_populateLocalizedValues(bookmarksEntry, map);
 		_populateRoles(bookmarksEntry, map);
 
 		return map;
@@ -189,6 +190,35 @@ public class BookmarksEntryIndexerIndexedFieldsTest {
 		indexedFieldsFixture.populateDate(
 			Field.PUBLISH_DATE, bookmarksEntry.getCreateDate(), map);
 		indexedFieldsFixture.populateExpirationDateWithForever(map);
+	}
+
+	private void _populateLocalizedValues(
+		BookmarksEntry bookmarksEntry, Map<String, String> map) {
+
+		String title = bookmarksEntry.getName();
+
+		map.put(Field.TITLE, title);
+
+		map.put(
+			Field.getSortableFieldName(Field.TITLE),
+			StringUtil.lowerCase(title));
+
+		map.put(Field.DESCRIPTION, bookmarksEntry.getDescription());
+
+		for (Locale locale :
+				LanguageUtil.getAvailableLocales(bookmarksEntry.getGroupId())) {
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			map.put(
+				LocalizationUtil.getLocalizedName(Field.TITLE, languageId),
+				bookmarksEntry.getName());
+
+			map.put(
+				LocalizationUtil.getLocalizedName(
+					Field.DESCRIPTION, languageId),
+				bookmarksEntry.getDescription());
+		}
 	}
 
 	private void _populateRoles(
