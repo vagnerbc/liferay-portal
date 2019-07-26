@@ -16,6 +16,7 @@ package com.liferay.exportimport.internal.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
@@ -25,6 +26,8 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
@@ -38,6 +41,7 @@ import java.io.Serializable;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Before;
@@ -146,7 +150,6 @@ public class ExportImportIndexedFieldsTest {
 		map.put(
 			Field.COMPANY_ID,
 			String.valueOf(exportImportConfiguration.getCompanyId()));
-		map.put(Field.DESCRIPTION, exportImportConfiguration.getDescription());
 		map.put(
 			Field.ENTRY_CLASS_NAME, ExportImportConfiguration.class.getName());
 		map.put(
@@ -200,6 +203,8 @@ public class ExportImportIndexedFieldsTest {
 
 		_populateDates(exportImportConfiguration, map);
 
+		_populateLocalizedValues(exportImportConfiguration, map);
+
 		indexedFieldsFixture.populateUID(
 			ExportImportConfiguration.class.getName(),
 			exportImportConfiguration.getExportImportConfigurationId(), map);
@@ -217,6 +222,25 @@ public class ExportImportIndexedFieldsTest {
 		indexedFieldsFixture.populateDate(
 			Field.MODIFIED_DATE, exportImportConfiguration.getModifiedDate(),
 			map);
+	}
+
+	private void _populateLocalizedValues(
+		ExportImportConfiguration exportImportConfiguration,
+		Map<String, String> map) {
+
+		map.put(Field.DESCRIPTION, exportImportConfiguration.getDescription());
+
+		for (Locale locale :
+				LanguageUtil.getAvailableLocales(
+					exportImportConfiguration.getGroupId())) {
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			map.put(
+				LocalizationUtil.getLocalizedName(
+					Field.DESCRIPTION, languageId),
+				exportImportConfiguration.getDescription());
+		}
 	}
 
 	@DeleteAfterTestRun
