@@ -26,6 +26,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
@@ -36,6 +37,7 @@ import com.liferay.portal.kernel.search.RelatedEntryIndexerRegistry;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -192,6 +194,8 @@ public class DLFileEntryModelDocumentContributor
 				}
 			}
 
+			_addLocalizedFields(document, dlFileEntry);
+
 			if (_log.isDebugEnabled()) {
 				_log.debug("Document " + dlFileEntry + " indexed successfully");
 			}
@@ -288,6 +292,33 @@ public class DLFileEntryModelDocumentContributor
 
 	@Reference
 	protected TrashHelper trashHelper;
+
+	private void _addLocalizedFields(
+		Document document, DLFileEntry dlFileEntry) {
+
+		for (Locale locale :
+				LanguageUtil.getAvailableLocales(dlFileEntry.getGroupId())) {
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			String title = dlFileEntry.getTitle();
+
+			if (dlFileEntry.isInTrash()) {
+				title = trashHelper.getOriginalTitle(title);
+			}
+
+			document.addText(Field.TITLE, title);
+
+			document.addText(
+				LocalizationUtil.getLocalizedName(Field.TITLE, languageId),
+				title);
+
+			document.addText(
+				LocalizationUtil.getLocalizedName(
+					Field.DESCRIPTION, languageId),
+				dlFileEntry.getDescription());
+		}
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLFileEntryModelDocumentContributor.class);
