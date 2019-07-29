@@ -16,9 +16,11 @@ package com.liferay.mail.reader.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.mail.reader.model.Message;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
@@ -26,6 +28,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexerFixture;
@@ -141,6 +144,17 @@ public class MessageMultiLanguageSearchTest {
 		return new HashMap<String, String>() {
 			{
 				put(field, keywords);
+
+				for (Locale locale :
+						LanguageUtil.getAvailableLocales(_group.getGroupId())) {
+
+					String languageId = LocaleUtil.toLanguageId(locale);
+
+					put(
+						LocalizationUtil.getLocalizedName(
+							Field.CONTENT, languageId),
+						keywords);
+				}
 			}
 		};
 	}

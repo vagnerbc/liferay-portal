@@ -18,6 +18,8 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.mail.reader.model.Account;
 import com.liferay.mail.reader.model.Folder;
 import com.liferay.mail.reader.model.Message;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
@@ -28,6 +30,8 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.search.test.util.IndexedFieldsFixture;
@@ -39,6 +43,7 @@ import com.liferay.users.admin.test.util.search.UserSearchFixture;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.Before;
@@ -137,15 +142,11 @@ public class MessageIndexerIndexedFieldsTest {
 
 		map.put(Field.COMPANY_ID, String.valueOf(message.getCompanyId()));
 
-		map.put(Field.CONTENT, message.getBody());
-
 		map.put(Field.ENTRY_CLASS_NAME, Message.class.getName());
 
 		map.put(Field.ENTRY_CLASS_PK, String.valueOf(message.getMessageId()));
 
 		map.put(Field.FOLDER_ID, String.valueOf(message.getFolderId()));
-
-		map.put(Field.TITLE, message.getSubject());
 
 		map.put(Field.USER_ID, String.valueOf(message.getUserId()));
 
@@ -164,6 +165,7 @@ public class MessageIndexerIndexedFieldsTest {
 			Message.class.getName(), message.getMessageId(), map);
 
 		_populateDates(message, map);
+		_populateLocalizedValues(message, map);
 		_populateRoles(message, map);
 
 		return map;
@@ -174,6 +176,28 @@ public class MessageIndexerIndexedFieldsTest {
 			Field.CREATE_DATE, message.getCreateDate(), map);
 		indexedFieldsFixture.populateDate(
 			Field.MODIFIED_DATE, message.getModifiedDate(), map);
+	}
+
+	private void _populateLocalizedValues(
+			Message message, Map<String, String> map)
+		throws PortalException {
+
+		map.put(Field.CONTENT, message.getBody());
+		map.put(Field.TITLE, message.getSubject());
+
+		for (Locale locale :
+				LanguageUtil.getAvailableLocales(message.getGroupId())) {
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			map.put(
+				LocalizationUtil.getLocalizedName(Field.CONTENT, languageId),
+				message.getBody());
+
+			map.put(
+				LocalizationUtil.getLocalizedName(Field.TITLE, languageId),
+				message.getSubject());
+		}
 	}
 
 	private void _populateRoles(Message message, Map<String, String> map)
