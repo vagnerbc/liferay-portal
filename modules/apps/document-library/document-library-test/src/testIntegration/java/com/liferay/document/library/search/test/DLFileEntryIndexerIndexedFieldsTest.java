@@ -31,7 +31,9 @@ import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.test.util.FieldValuesAssert;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -218,6 +220,7 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 		populateDates(fileEntry, map);
 		populateHttpHeaders(fileEntry, map);
 		populateLocalizedTitles(fileEntry, map);
+		populateLocalizedValues(fileEntry, map);
 		populateViewCount(fileEntry, map);
 
 		indexedFieldsFixture.populatePriority("0.0", map);
@@ -271,6 +274,29 @@ public class DLFileEntryIndexerIndexedFieldsTest extends BaseDLIndexerTestCase {
 
 			map.put(key, title);
 			map.put(key.concat("_sortable"), title);
+		}
+	}
+
+	protected void populateLocalizedValues(
+		FileEntry fileEntry, Map<String, String> map) {
+
+		for (Locale locale :
+				LanguageUtil.getAvailableLocales(fileEntry.getGroupId())) {
+
+			String languageId = LocaleUtil.toLanguageId(locale);
+
+			map.put(
+				LocalizationUtil.getLocalizedName(Field.TITLE, languageId),
+				fileEntry.getTitle());
+
+			String description = fileEntry.getDescription();
+
+			if (Validator.isNotNull(description) && !description.isEmpty()) {
+				map.put(
+					LocalizationUtil.getLocalizedName(
+						Field.DESCRIPTION, languageId),
+					description);
+			}
 		}
 	}
 
