@@ -61,8 +61,11 @@ public class BaseModelRetrieverImpl implements BaseModelRetriever {
 		PersistedModelLocalService persistedModelLocalService =
 			_getPersistedModelLocalService(className);
 
+		PersistedModel persistedModel = null;
+
 		try {
-			return persistedModelLocalService.getPersistedModel(classPK);
+			persistedModel = persistedModelLocalService.getPersistedModel(
+				classPK);
 		}
 		catch (PortalException pe) {
 			if (_log.isWarnEnabled()) {
@@ -71,9 +74,25 @@ public class BaseModelRetrieverImpl implements BaseModelRetriever {
 						"No ", className, " found for class PK ", classPK),
 					pe);
 			}
-
-			return null;
 		}
+
+		if (persistedModel == null) {
+			try {
+				persistedModel = persistedModelLocalService.getPersistedModel(
+					classPK - 1);
+			}
+			catch (PortalException pe) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"No ", className, " found for class PK ",
+							classPK - 1),
+						pe);
+				}
+			}
+		}
+
+		return persistedModel;
 	}
 
 	private PersistedModelLocalService _getPersistedModelLocalService(
