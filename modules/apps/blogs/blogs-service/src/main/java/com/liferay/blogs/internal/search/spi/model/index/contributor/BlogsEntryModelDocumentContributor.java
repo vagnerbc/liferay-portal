@@ -60,9 +60,15 @@ public class BlogsEntryModelDocumentContributor
 			document.addText(
 				LocalizationUtil.getLocalizedName(Field.CONTENT, languageId),
 				content);
+
 			document.addText(
 				LocalizationUtil.getLocalizedName(Field.TITLE, languageId),
 				blogsEntry.getTitle());
+
+			document.addText(
+				LocalizationUtil.getLocalizedName(
+					Field.DESCRIPTION, languageId),
+				blogsEntry.getDescription());
 		}
 	}
 
